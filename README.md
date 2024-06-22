@@ -31,7 +31,7 @@ Este repositorio contiene una aplicación completa para la gestión de usuarios 
 
 ### Clonar el Repositorio
 ```bash
-git clone https://github.com/MrDavidAlv/Gesti-n-de-Usuarios-y-Roles---API-REST-.NETcore/blob/main/servicios.PNG
+git clone https://github.com/MrDavidAlv/Gesti-n-de-Usuarios-y-Roles---API-REST-.NETcore
 cd empleadosFYMtech
 ```
 Este repositorio contiene una API desarrollada con ASP.NET Core para gestionar empleados y datos paramétricos como países y ciudades.
