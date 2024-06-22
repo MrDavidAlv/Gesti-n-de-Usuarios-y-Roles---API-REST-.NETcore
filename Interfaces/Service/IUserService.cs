@@ -11,6 +11,8 @@ namespace empleadosFYMtech.Interfaces.Service
         Task<Usuario> CrearUsuarioAsync(Usuario usuario);
         Task<bool> ActualizarUsuarioAsync(int id, Usuario usuario);
         Task<bool> EliminarUsuarioAsync(int id);
+        Task<Usuario> GetUserByEmailAsync(string email);
+        Task<bool> ValidatePasswordAsync(Usuario user, string password);
     }
 }
 

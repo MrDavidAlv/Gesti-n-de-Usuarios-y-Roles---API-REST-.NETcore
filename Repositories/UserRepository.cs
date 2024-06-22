@@ -70,5 +70,10 @@ namespace empleadosFYMtech.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<Usuario> GetUserByEmailAsync(string email)
+        {
+            return await _context.Usuarios.FirstOrDefaultAsync(u => u.email == email);
+        }
     }
 }

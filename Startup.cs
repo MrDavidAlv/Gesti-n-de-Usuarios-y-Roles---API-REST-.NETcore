@@ -3,8 +3,12 @@ using empleadosFYMtech.Interfaces.Repository;
 using empleadosFYMtech.Interfaces.Service;
 using empleadosFYMtech.Repositories;
 using empleadosFYMtech.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text;
 
 public class Startup
 {
@@ -17,6 +21,23 @@ public class Startup
 
     public void ConfigureServices(IServiceCollection services)
     {
+        // Configurar la autenticación JWT
+        var key = Encoding.ASCII.GetBytes(Configuration["Jwt:Key"]);
+
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidIssuer = Configuration["JWT:Issuer"],
+                    ValidAudience = Configuration["JWT:Audience"],
+                };
+            });
+
         services.AddControllers();
 
         // Configurar Entity Framework Core con SQL Server
@@ -50,6 +71,7 @@ public class Startup
         app.UseHttpsRedirection();
         app.UseRouting();
 
+        app.UseAuthentication();
         app.UseAuthorization();
 
         app.UseEndpoints(endpoints =>
