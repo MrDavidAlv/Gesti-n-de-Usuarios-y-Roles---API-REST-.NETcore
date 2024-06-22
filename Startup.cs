@@ -1,5 +1,7 @@
 ﻿using empleadosFYMtech.Data;
-using empleadosFYMtech.Interfaces;
+using empleadosFYMtech.Interfaces.Repository;
+using empleadosFYMtech.Interfaces.Service;
+using empleadosFYMtech.Repositories;
 using empleadosFYMtech.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -27,7 +29,13 @@ public class Startup
         });
 
         // Registrar el servicio de parámetros
+        services.AddScoped<IPaisRepository, PaisRepository>();
+        services.AddScoped<ICiudadRepository, CiudadRepository>();
         services.AddScoped<IParametersService, ParametersService>();
+
+        // Registrar el servicio de usuario
+        services.AddScoped<IUserRepository, UserRepository>();
+        services.AddScoped<IUserService, UserService>();
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

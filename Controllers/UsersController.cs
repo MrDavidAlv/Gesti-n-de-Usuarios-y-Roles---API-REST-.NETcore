@@ -1,60 +1,107 @@
-﻿using empleadosFYMtech.DTOs;
-using empleadosFYMtech.Interfaces;
-using Microsoft.AspNetCore.Authorization;
+﻿using empleadosFYMtech.Interfaces.Service;
+using empleadosFYMtech.Models;
 using Microsoft.AspNetCore.Mvc;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace empleadosFYMtech.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
-    public class UsersController : ControllerBase
+    [Route("api/[controller]")]
+    public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
 
-        public UsersController(IUserService userService)
+        public UserController(IUserService userService)
         {
-            _userService = userService;
+            _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
-        [HttpPost("register")]
-        [AllowAnonymous] // Permitir acceso anónimo para el registro
-        public async Task<IActionResult> Register(UserRegisterDto userDto)
+        [HttpGet]
+        public async Task<ActionResult<List<Usuario>>> GetUsuarios()
         {
             try
             {
-                var user = await _userService.Register(userDto);
-                return Ok(new { message = "User registered successfully" });
+                var usuarios = await _userService.GetUsuariosAsync();
+                if (usuarios == null || usuarios.Count == 0)
+                {
+                    return NotFound("No se encontraron usuarios.");
+                }
+                return Ok(usuarios);
             }
             catch (Exception ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
 
-        [HttpPost("login")]
-        [AllowAnonymous] // Permitir acceso anónimo para el inicio de sesión
-        public async Task<IActionResult> Login(UserLoginDto userDto)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Usuario>> GetUsuario(int id)
         {
             try
             {
-                var token = await _userService.Login(userDto);
-                return Ok(new { token });
+                var usuario = await _userService.GetUsuarioByIdAsync(id);
+                if (usuario == null)
+                {
+                    return NotFound($"Usuario con ID {id} no encontrado.");
+                }
+                return Ok(usuario);
             }
             catch (Exception ex)
             {
-                return Unauthorized(new { message = ex.Message });
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
             }
         }
 
-        [HttpGet("userinfo")]
-        [Authorize] // Requiere autenticación JWT
-        public IActionResult UserInfo()
+        [HttpPost]
+        public async Task<ActionResult<Usuario>> CrearUsuario(Usuario usuario)
         {
-            // Obtener el nombre de usuario del token JWT
-            var username = User.Identity.Name;
-            return Ok(new { username });
+            try
+            {
+                var nuevoUsuario = await _userService.CrearUsuarioAsync(usuario);
+                return CreatedAtAction(nameof(GetUsuario), new { id = nuevoUsuario.id }, nuevoUsuario);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> ActualizarUsuario(int id, Usuario usuario)
+        {
+            try
+            {
+                var result = await _userService.ActualizarUsuarioAsync(id, usuario);
+                if (!result)
+                {
+                    return NotFound($"Usuario con ID {id} no encontrado.");
+                }
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> EliminarUsuario(int id)
+        {
+            try
+            {
+                var result = await _userService.EliminarUsuarioAsync(id);
+                if (!result)
+                {
+                    return NotFound($"Usuario con ID {id} no encontrado.");
+                }
+                return NoContent();
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Error interno del servidor: {ex.Message}");
+            }
         }
     }
 }

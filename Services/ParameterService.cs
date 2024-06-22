@@ -1,5 +1,5 @@
 ﻿using empleadosFYMtech.Data;
-using empleadosFYMtech.Interfaces;
+using empleadosFYMtech.Interfaces.Service;
 using empleadosFYMtech.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -18,17 +18,17 @@ namespace empleadosFYMtech.Services
 
         public async Task<IEnumerable<Pais>> GetPaisesAsync()
         {
-            return await _context.Pais.ToListAsync();
+            return await _context.Paises.ToListAsync();
         }
 
         public async Task<IEnumerable<Ciudad>> GetCiudadesAsync()
         {
-            return await _context.Ciudad.ToListAsync();
+            return await _context.Ciudades.ToListAsync();
         }
 
         public async Task<IEnumerable<Ciudad>> GetCiudadesByPaisAsync(int idPais)
         {
-            return await _context.Ciudad.Where(c => c.idPais == idPais).ToListAsync();
+            return await _context.Ciudades.Where(c => c.IdPais == idPais).ToListAsync();
         }
     }
 }

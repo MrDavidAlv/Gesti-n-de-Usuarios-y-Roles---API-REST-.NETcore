@@ -1,5 +1,5 @@
 ﻿using empleadosFYMtech.Data;
-using empleadosFYMtech.Interfaces;
+using empleadosFYMtech.Interfaces.Service;
 using empleadosFYMtech.Models;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
@@ -15,9 +15,9 @@ namespace empleadosFYMtech.Services
             _context = context;
         }
 
-        public async Task<Role> GetRoleByNameAsync(string roleName)
+        public async Task<Rol> GetRoleByNameAsync(string roleName)
         {
-            return await _context.Roles.FirstOrDefaultAsync(r => r.Name == roleName);
+            return await _context.Roles.FirstOrDefaultAsync(r => r.nombreRol == roleName);
         }
     }
 }

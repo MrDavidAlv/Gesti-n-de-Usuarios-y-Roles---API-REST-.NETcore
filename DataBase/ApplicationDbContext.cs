@@ -1,5 +1,5 @@
-﻿using empleadosFYMtech.Models;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using empleadosFYMtech.Models;
 
 namespace empleadosFYMtech.Data
 {
@@ -9,75 +9,38 @@ namespace empleadosFYMtech.Data
         {
         }
 
-        public DbSet<User> Users { get; set; }
-        public DbSet<Role> Roles { get; set; }
-
-        public DbSet<Ciudad> Ciudad { get; set; }
-        public DbSet<Pais> Pais { get; set; }
+        // DbSet para las entidades de la base de datos
+        public DbSet<Ciudad> Ciudades { get; set; }
+        public DbSet<Pais> Paises { get; set; }
+        public DbSet<Rol> Roles { get; set; }
+        public DbSet<Usuario> Usuarios { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.Entity<Role>().HasData(
-                new Role { Id = 1, Name = "SuperAdmin" },
-                new Role { Id = 2, Name = "Admin" },
-                new Role { Id = 3, Name = "User" }
-            );
+            // Configuración de las relaciones entre entidades y restricciones
+            modelBuilder.Entity<Ciudad>()
+                .HasKey(c => c.IdCiudad);
 
-            modelBuilder.Entity<User>().HasData(
-                new User
-                {
-                    Id = 1,
-                    Username = "admin",
-                    PasswordHash = BCrypt.Net.BCrypt.HashPassword("admin123"), // Usar hash seguro en producción
-                    Email = "admin@example.com",
-                    RoleId = 1 // SuperAdmin role
-                }
-            );
+            modelBuilder.Entity<Pais>()
+                .HasKey(p => p.IdPais);
 
-          
+            modelBuilder.Entity<Rol>()
+                .HasKey(r => r.idRol);
+
+            modelBuilder.Entity<Usuario>()
+                .HasKey(u => u.id);
+
+        
+
+        
+
+            // Especificar el esquema y nombre de las tablas
+            modelBuilder.Entity<Ciudad>().ToTable("ciudad", "par");
+            modelBuilder.Entity<Pais>().ToTable("pais", "par");
+            modelBuilder.Entity<Rol>().ToTable("roles", "par");
+            modelBuilder.Entity<Usuario>().ToTable("datosUsuario", "usuario");
 
             base.OnModelCreating(modelBuilder);
-
-
-            // Configuración de la entidad Ciudad
-            modelBuilder.Entity<Ciudad>(entity =>
-            {
-                entity.ToTable("ciudad", "par");
-
-                entity.HasKey(e => e.idCiudad);
-
-                entity.Property(e => e.idCiudad)
-                    .HasColumnName("idCiudad")
-                    .ValueGeneratedOnAdd();
-
-                entity.Property(e => e.nombreCiudad)
-                    .HasColumnName("nombreciudad")
-                    .IsRequired()
-                    .HasMaxLength(50);
-
-                entity.Property(e => e.idPais)
-                    .HasColumnName("idPais")
-                    .IsRequired();
-            });
-
-            // Configuración de la entidad Pais
-            modelBuilder.Entity<Pais>(entity =>
-            {
-                entity.ToTable("pais", "par");
-
-                entity.HasKey(e => e.idPais);
-
-                entity.Property(e => e.idPais)
-                    .HasColumnName("idPais")
-                    .ValueGeneratedOnAdd();
-
-                entity.Property(e => e.nombrePais)
-                    .HasColumnName("nombrePais")
-                    .IsRequired()
-                    .HasMaxLength(50);
-            });
-
-
         }
     }
 }

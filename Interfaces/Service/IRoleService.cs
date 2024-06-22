@@ -1,10 +1,10 @@
 ﻿using empleadosFYMtech.Models;
 using System.Threading.Tasks;
 
-namespace empleadosFYMtech.Interfaces
+namespace empleadosFYMtech.Interfaces.Service
 {
     public interface IRoleService
     {
-        Task<Role> GetRoleByNameAsync(string roleName);
+        Task<Rol> GetRoleByNameAsync(string roleName);
     }
 }

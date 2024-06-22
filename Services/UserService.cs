@@ -1,80 +1,46 @@
-﻿using empleadosFYMtech.Data;
-using empleadosFYMtech.DTOs;
-using empleadosFYMtech.Interfaces;
+﻿using empleadosFYMtech.Interfaces.Service;
+using empleadosFYMtech.Interfaces.Repository;
+using empleadosFYMtech.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.IdentityModel.Tokens;
 using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace empleadosFYMtech.Services
 {
     public class UserService : IUserService
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IConfiguration _configuration;
-        private readonly IRoleService _roleService;
+        private readonly IUserRepository _userRepository;
 
-        public UserService(ApplicationDbContext context, IConfiguration configuration, IRoleService roleService)
+        public UserService(IUserRepository userRepository)
         {
-            _context = context;
-            _configuration = configuration;
-            _roleService = roleService;
+            _userRepository = userRepository ?? throw new ArgumentNullException(nameof(userRepository));
         }
 
-        public async Task<User> Register(UserRegisterDto userDto)
+        public async Task<List<Usuario>> GetUsuariosAsync()
         {
-            var role = await _roleService.GetRoleByNameAsync("User");
-            if (role == null)
-            {
-                throw new Exception("Role not found");
-            }
-
-            var user = new User
-            {
-                Username = userDto.Username,
-                PasswordHash = BCrypt.Net.BCrypt.HashPassword(userDto.Password),
-                Email = userDto.Email,
-                RoleId = role.Id
-            };
-
-            _context.Users.Add(user);
-            await _context.SaveChangesAsync();
-            return user;
+            return await _userRepository.GetUsuariosAsync();
         }
 
-        public async Task<string> Login(UserLoginDto userDto)
+        public async Task<Usuario> GetUsuarioByIdAsync(int id)
         {
-            var user = await _context.Users.Include(u => u.Role).FirstOrDefaultAsync(u => u.Username == userDto.Username);
-            if (user == null || !BCrypt.Net.BCrypt.Verify(userDto.Password, user.PasswordHash))
-            {
-                throw new Exception("Invalid credentials");
-            }
-
-            var token = GenerateJwtToken(user);
-            return token;
+            return await _userRepository.GetUsuarioByIdAsync(id);
         }
 
-        private string GenerateJwtToken(User user)
+        public async Task<Usuario> CrearUsuarioAsync(Usuario usuario)
         {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]);
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new[]
-                {
-                    new Claim(ClaimTypes.Name, user.Username),
-                    new Claim(ClaimTypes.Role, user.Role.Name)
-                }),
-                Expires = DateTime.UtcNow.AddMinutes(Convert.ToInt32(_configuration["Jwt:DurationInMinutes"])),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
+            return await _userRepository.CrearUsuarioAsync(usuario);
+        }
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
+        public async Task<bool> ActualizarUsuarioAsync(int id, Usuario usuario)
+        {
+            return await _userRepository.ActualizarUsuarioAsync(id, usuario);
+        }
+
+        public async Task<bool> EliminarUsuarioAsync(int id)
+        {
+            return await _userRepository.EliminarUsuarioAsync(id);
         }
     }
 }

@@ -3,29 +3,27 @@ using System.ComponentModel.DataAnnotations;
 
 namespace empleadosFYMtech.Models
 {
-    [Table("par", Schema = "ciudad")]
+    [Table("ciudad", Schema = "par")]
     public class Ciudad
     {
         [Key]
-        public int idCiudad { get; set; }
+        public int IdCiudad { get; set; }
 
-        [Required]
         [MaxLength(100)]
-        public string nombreCiudad { get; set; }
+        public string NombreCiudad { get; set; }
 
-        [Required]
-        public int idPais { get; set; }
-
+        public int? IdPais { get; set; }
 
     }
 
-    [Table("par", Schema = "pais")]
+
+
+    [Table("pais", Schema = "par")]
     public class Pais
     {
         [Key]
-        public int idPais { get; set; }
+        public int IdPais { get; set; }
 
-        [Required]
         [MaxLength(100)]
         public string nombrePais { get; set; }
 
