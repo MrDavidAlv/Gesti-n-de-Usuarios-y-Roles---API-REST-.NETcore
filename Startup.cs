@@ -5,7 +5,8 @@ using empleadosFYMtech.Repositories;
 using empleadosFYMtech.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
@@ -33,8 +34,10 @@ public class Startup
                 {
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKey = new SymmetricSecurityKey(key),
-                    ValidIssuer = Configuration["JWT:Issuer"],
-                    ValidAudience = Configuration["JWT:Audience"],
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidIssuer = Configuration["Jwt:Issuer"],
+                    ValidAudience = Configuration["Jwt:Audience"],
                 };
             });
 
@@ -47,16 +50,48 @@ public class Startup
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "empleadosFYMtech API", Version = "v1" });
+
+            // Configurar autenticación de Swagger con JWT
+            c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            {
+                In = ParameterLocation.Header,
+                Description = "Please insert JWT with Bearer into field",
+                Name = "Authorization",
+                Type = SecuritySchemeType.ApiKey,
+                BearerFormat = "JWT",
+                Scheme = "Bearer"
+            });
+
+            c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+                {
+                    new OpenApiSecurityScheme {
+                        Reference = new OpenApiReference {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    new string[] { }
+                }
+            });
         });
 
-        // Registrar el servicio de parámetros
+        // Registrar servicios y repositorios
         services.AddScoped<IPaisRepository, PaisRepository>();
         services.AddScoped<ICiudadRepository, CiudadRepository>();
         services.AddScoped<IParametersService, ParametersService>();
 
-        // Registrar el servicio de usuario
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IUserService, UserService>();
+
+        // Registrar el servicio de autenticación
+        services.AddScoped<IAuthService, AuthService>();
+
+        // Configurar políticas de autorización
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("AdminOnly", policy => policy.RequireRole("Admin"));
+            // Agrega más políticas según sea necesario
+        });
     }
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

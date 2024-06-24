@@ -1,5 +1,5 @@
-﻿using empleadosFYMtech.Interfaces.Service;
-using empleadosFYMtech.Models;
+﻿using empleadosFYMtech.Models;
+using empleadosFYMtech.Interfaces.Service;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -7,32 +7,41 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-public class AuthService : IAuthService
+namespace empleadosFYMtech.Services
 {
-    private readonly IConfiguration _configuration;
-
-    public AuthService(IConfiguration configuration)
+    public class AuthService : IAuthService
     {
-        _configuration = configuration;
-    }
+        private readonly IConfiguration _configuration;
 
-    public string GenerateJwtToken(Usuario user)
-    {
-        var key = Encoding.ASCII.GetBytes(_configuration["JwtConfig:Secret"]);
-        var tokenHandler = new JwtSecurityTokenHandler();
-
-        var tokenDescriptor = new SecurityTokenDescriptor
+        public AuthService(IConfiguration configuration)
         {
-            Subject = new ClaimsIdentity(new Claim[]
-            {
-                new Claim(ClaimTypes.Name, user.email),
-                new Claim(ClaimTypes.Role, "admin") // Ajustar roles según tu lógica
-            }),
-            Expires = DateTime.UtcNow.AddHours(1), // Tiempo de expiración del token
-            SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-        };
+            _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        }
 
-        var token = tokenHandler.CreateToken(tokenDescriptor);
-        return tokenHandler.WriteToken(token);
+        public string GenerateJwtToken(Usuario user)
+        {
+            var key = _configuration["Jwt:Key"];
+            if (string.IsNullOrEmpty(key))
+            {
+                throw new ArgumentNullException(nameof(key), "JWT key is not configured.");
+            }
+
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var keyBytes = Encoding.UTF8.GetBytes(key);
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new[]
+                {
+                    new Claim(ClaimTypes.Name, user.email),
+                    new Claim(ClaimTypes.NameIdentifier, user.id.ToString())
+                }),
+                Expires = DateTime.UtcNow.AddHours(1),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(keyBytes), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
+        }
     }
 }

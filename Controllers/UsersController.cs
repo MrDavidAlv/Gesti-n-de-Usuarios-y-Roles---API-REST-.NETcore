@@ -1,5 +1,6 @@
 ﻿using empleadosFYMtech.Interfaces.Service;
 using empleadosFYMtech.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
@@ -7,8 +8,9 @@ using System.Threading.Tasks;
 
 namespace empleadosFYMtech.Controllers
 {
-    [ApiController]
+    [Authorize]
     [Route("api/[controller]")]
+    [ApiController]
     public class UserController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -17,6 +19,7 @@ namespace empleadosFYMtech.Controllers
         {
             _userService = userService ?? throw new ArgumentNullException(nameof(userService));
         }
+
 
         [HttpGet]
         public async Task<ActionResult<List<Usuario>>> GetUsuarios()
@@ -54,7 +57,9 @@ namespace empleadosFYMtech.Controllers
             }
         }
 
+        
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public async Task<ActionResult<Usuario>> CrearUsuario(Usuario usuario)
         {
             try
@@ -86,7 +91,9 @@ namespace empleadosFYMtech.Controllers
             }
         }
 
+        
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> EliminarUsuario(int id)
         {
             try
